@@ -1,0 +1,23 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Inter", sans-serif;
+}
+@layer utilities {
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  .max-width {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .max-width-2 {
+    max-width: 100vw;
+    padding: 2% 5%;
+    margin: 0 auto;
+  }
+}
