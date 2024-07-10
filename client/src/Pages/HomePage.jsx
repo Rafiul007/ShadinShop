@@ -2,6 +2,8 @@ import HeroSlider from "../components/HeroSlider";
 import { IoIosList } from "react-icons/io";
 import topCategories from '../assets/banner/topCategory';
 import InfinitySlider from '../components/InfinitySlider';
+import ProductCard from '../components/ProductCard';
+import banner from "../assets/banner/banner1.jpg";
 function HomePage() {
   return (
     <div>
@@ -22,10 +24,21 @@ function HomePage() {
           <HeroSlider />
         </div>
       </section>
-      <section className='w-full overflow-hidden'>
+      <section className='w-full overflow-hidden mb-16 mt-2'>
         <InfinitySlider />
       </section>
-      
+      <section className="w-full flex flex-col gap-10 mb-10">
+        <div className="w-full h-1/2 bg-tertiary">
+          <h1 className="text-center text-4xl text-primary font-bold py-10">Hot Deals</h1>
+        </div>
+        <div className="w-full grid grid-cols-4 gap-5 max-width">
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500}/>
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500}/>
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four Testing one two three four Testing one two three four"} price={2500}/>
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500}/>
+
+        </div>
+      </section>
     </div>
   );
 }
