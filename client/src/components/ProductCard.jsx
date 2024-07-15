@@ -9,7 +9,11 @@ export default function ProductCard({ image, title, description, price }) {
       <div className="flex flex-col p-6 flex-1">
         <header className="mb-4">
           <h3 className="text-xl font-medium text-slate-700 truncate">{title}</h3>
-          <p className="text-slate-400">{price}</p>
+          <div className="flex flex-row gap-3">
+            <p className="text-primary font-semibold">TK {price}</p>
+            <p className="text-slate-400 line-through">TK {price}</p>
+          </div>
+
         </header>
         <p className="text-sm text-slate-500 line-clamp-2 flex-1">
           {description}

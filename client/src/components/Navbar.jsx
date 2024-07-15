@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { CiSearch, CiShoppingCart, CiUser } from 'react-icons/ci';
@@ -17,19 +17,22 @@ function Navbar() {
             <div>
               <Link to="/"><img src={logo} alt="logo" height={40} width={40} /></Link>
             </div>
+            {/* search */}
             <div className="flex gap-10 items-center ml-10">
-              <div className="flex items-center gap-2 bg-white rounded-full shadow-md overflow-hidden">
+              <div className="flex items-center gap-2 bg-white rounded shadow-md overflow-hidden">
                 <input
                   type="text"
                   placeholder="Search"
                   className="px-4 py-2 focus:outline-none"
                 />
-                <button className="p-2 bg-primary rounded-full text-tertiary hover:bg-orange-600">
+                <button className="px-4 py-2 bg-primary  text-tertiary hover:bg-orange-600">
                   <CiSearch size={24} className="hover:scale-110 ease-in-out duration-200" />
                 </button>
               </div>
             </div>
-            <div className="flex max-width items-center">
+            {/* search end */}
+            {/* menu */}
+            <div className="flex px-2  items-center ">
               <ul className="flex gap-10 justify-center items-center">
                 {navitems.map((item) => (
                   <li
@@ -43,6 +46,7 @@ function Navbar() {
                 ))}
               </ul>
             </div>
+            {/* menu end */}
             <div className="relative flex gap-5">
               <div className="relative">
                 <CiShoppingCart
