@@ -1,5 +1,6 @@
 import HeroSlider from "../components/HeroSlider";
 import Newsletter from "../components/Newsletter";
+import Footer from '../components/Footer'
 import { IoIosList } from "react-icons/io";
 import topCategories from '../assets/banner/topCategory';
 import InfinitySlider from '../components/InfinitySlider';
@@ -44,10 +45,30 @@ function HomePage() {
         </div>
       </section>
       {/* Newsletter */}
-      <section className="w-full bg-tertiary p-10">
+      <section className="w-full bg-tertiary p-10 my-10">
         <Newsletter />
       </section>
       {/* Products */}
+      <section className="max-width-3 mb-10">
+        <div className="grid grid-cols-5 grid-rows-2 gap-3">
+          <div className="col-span-2 row-span-1">
+            <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          </div>
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+          <ProductCard image={banner} title={"Testing"} description={"Testing one two three four"} price={2500} />
+
+        </div>
+      </section>
+      {/* Footer */}
+      <section>
+        <Footer />
+      </section>
     </div>
   );
 }
