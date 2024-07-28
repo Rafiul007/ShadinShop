@@ -27,9 +27,9 @@ export default function HeroSlider() {
     <>
       <div className="relative w-full overflow-hidden bg-white rounded shadow-xl glide-06 shadow-slate-200">
         <div className="overflow-hidden w-full" data-glide-el="track">
-          <ul className="w-full whitespace-no-wrap flex-no-wrap relative flex p-0">
+          <ul className="w-full h-full whitespace-no-wrap flex-no-wrap relative flex p-0">
             {banner.map((item) => (
-              <li key={item.id} className="w-full">
+              <li key={item.id} className="w-full flex-1">
                 <img
                   src={item.img}
                   alt="banner"

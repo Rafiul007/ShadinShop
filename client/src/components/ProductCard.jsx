@@ -1,6 +1,6 @@
 export default function ProductCard({ image, title, description, price }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded bg-white text-slate-500 shadow-md shadow-slate-200 w-full h-96">
+    <div className="flex flex-col overflow-hidden rounded bg-white text-slate-500 shadow-md shadow-slate-200 w-full h-96 duration-200 ease-in-out hover:scale-105">
       {/* Image */}
       <figure className="flex-shrink-0 w-full h-40 overflow-hidden">
         <img src={image} alt="card image" className="w-full h-full object-cover" />
