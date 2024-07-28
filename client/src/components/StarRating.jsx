@@ -6,8 +6,8 @@ export default function StarRating({ rating }) {
       return (
         <>
           {/* Component: Rating Card Basic */}
-          <div className="overflow-hidden rounded bg-white text-slate-500 shadow-md shadow-slate-200">
-            <div className="p-6">
+          <div className="overflow-hidden rounded bg-white text-slate-500 ">
+            <div className="p-1">
               <div className="flex flex-col items-center gap-2">
                 {/* Rating */}
                 <span className="flex items-center gap-4 rounded text-sm text-slate-500">
