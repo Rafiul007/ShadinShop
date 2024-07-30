@@ -11,8 +11,6 @@ exports.authenticate = async (req, res, next) => {
   try {
     const decodedToken = jwtUtils.verifyToken(token);
     req.user = decodedToken;
-    req.userId = decodedToken.userId;
-    req.userType = decodedToken.userType;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -28,10 +26,7 @@ exports.authenticate = async (req, res, next) => {
         });
 
         res.setHeader("Authorization", `Bearer ${newAccessToken}`);
-
         req.user = decodedRefreshToken;
-        req.userId = decodedRefreshToken.userId;
-        req.userType = decodedRefreshToken.userType;
         next();
       } catch (refreshError) {
         console.error("Refresh token verification error:", refreshError.message);
