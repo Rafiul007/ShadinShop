@@ -18,15 +18,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // MongoDB connection
 const uri = process.env.DB_URI;
 mongoose
-  .connect(uri, {
-  })
+  .connect(uri)
   .then(() => {
     console.log("Connected to MongoDB");
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
   });
-//Routes
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+})
+// Import routes
+const employeeRoutes = require("./routes/employee.route");
+//routes
+app.use("/api/v1/employee", employeeRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
