@@ -111,3 +111,9 @@ exports.deleteEmployee = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 }
+
+//logout controller
+exports.logout=async(req,res)=>{
+  res.clearCookie("refreshToken");
+  return res.status(200).json({ message: "Logged out successfully" });
+}
