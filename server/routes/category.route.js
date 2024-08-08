@@ -28,5 +28,7 @@ router.post(
 router.get("/:id", getCategoryById);
 //get  all categories
 router.get("/", getCategories);
+//delete category by id
+router.delete("/:id", authenticate, isSuperadmin, deleteCategory);
 
 module.exports = router;

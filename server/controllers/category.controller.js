@@ -2,6 +2,7 @@ const Employee = require("../models/employee.model");
 const Category = require("../models/category.models");
 const { check, validationResult } = require("express-validator");
 const cloudinary = require("../utils/cloudinaryConfig");
+
 // create category
 exports.createCategory = async (req, res) => {
   const errors = validationResult(req);
@@ -98,6 +99,21 @@ exports.getCategories = async (req, res) => {
     res.status(200).json({ status: "success", data: categories });
   } catch (error) {
     console.error("Error getting categories:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//delete category by id
+exports.deleteCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const category = await Category.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting category:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
