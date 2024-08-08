@@ -5,10 +5,6 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   },
-  // No need for destination since we upload directly to Cloudinary
-  // destination: (req, file, cb) => {
-  //   cb(null, path.join(__dirname, "../uploads"));
-  // },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -23,10 +19,19 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
+// For single image upload
+const uploadSingle = multer({
   storage,
   limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit per file
   fileFilter,
-}).array('images', 5); // Handle multiple files, max 5 files
+}).single('image'); // Field name should match the form data field name
 
-module.exports = upload;
+
+//upload multiple
+const uploadMultiple = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 5 }, // 5MB limit per file
+  fileFilter,
+}).array('images', 5);  // Handle multiple files, max 5 files
+
+module.exports = { uploadMultiple,uploadSingle };
