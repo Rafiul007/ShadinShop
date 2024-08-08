@@ -6,11 +6,11 @@ const {
   updateCategory,
   deleteCategory,
   getCategories,
-  getCategoryById
+  getCategoryById,
 } = require("../controllers/category.controller");
 const { authenticate } = require("../middlewares/authMiddleware");
 const { isSuperadmin } = require("../middlewares/isSuperAdmin");
-const {uploadSingle} = require("../utils/multerConfig");
+const { uploadSingle } = require("../utils/multerConfig");
 
 //create category routes (authenticated only by superadmin)
 router.post(
@@ -26,5 +26,7 @@ router.post(
 );
 //get category by id
 router.get("/:id", getCategoryById);
+//get  all categories
+router.get("/", getCategories);
 
 module.exports = router;
