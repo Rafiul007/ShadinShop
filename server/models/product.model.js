@@ -9,12 +9,12 @@ const productSchema = new Schema(
     quantity: { type: Number, required: true },
     images: [{ type: String, required: true }],
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
-    discount: { type: Schema.Types.ObjectId, ref: "Discount", required: true },
+    discount: { type: Schema.Types.ObjectId, ref: "Discount",  default: null },
     relatedProducts: {
       type: Schema.Types.ObjectId,
       ref: "Product",
-      required: true,
-    },
+      default: null
+      },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "Employee",

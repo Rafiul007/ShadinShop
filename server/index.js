@@ -32,10 +32,11 @@ app.get("/", (req, res) => {
 // Import routes
 const employeeRoutes = require("./routes/employee.route");
 const categoryRoutes = require("./routes/category.route");
+const productRoutes = require("./routes/product.route");
 //routes
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/category", categoryRoutes);
-
+app.use("/api/v1/product", productRoutes);
 
 
 // Global error handler 

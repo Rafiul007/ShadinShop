@@ -14,7 +14,10 @@ exports.createCategory = async (req, res) => {
   const file = req.file;
   const createdBy = req.user.userId;
   const updatedBy = req.user.userId;
-
+  //check if name, description are not empty
+  if (!name || !description) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
   try {
     if (!file) {
       return res.status(400).json({ message: "Image is required" });
