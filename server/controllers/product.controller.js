@@ -3,15 +3,14 @@ const Category = require("../models/category.models");
 const Employee = require("../models/employee.model");
 const cloudinary = require("../utils/cloudinaryConfig");
 
-
 //function to calculate discount price based on discount type
 const calculateDiscountPrice = (price, discount, discountType) => {
-      if (discountType === "percentage") {
-            return price - (price * discount) / 100;
-      } else if (discountType === "amount") {
-            return price - discount;
-      }
-}
+  if (discountType === "percentage") {
+    return price - (price * discount) / 100;
+  } else if (discountType === "amount") {
+    return price - discount;
+  }
+};
 //create a product with multiple images
 exports.createProduct = async (req, res) => {
   var {
@@ -39,8 +38,8 @@ exports.createProduct = async (req, res) => {
   }
   //calculate discount price based on discount type
   const discountPrice = calculateDiscountPrice(price, discount, discountType);
-  if(!relatedProducts){
-        relatedProducts= null;
+  if (!relatedProducts) {
+    relatedProducts = null;
   }
   try {
     // Check if at least one image is uploaded
@@ -62,7 +61,7 @@ exports.createProduct = async (req, res) => {
     );
     const imageResults = await Promise.all(imageUploadPromises);
     // Extract secure URLs from Cloudinary response
-    const imageUrls = imageResults.map(result => result.secure_url);
+    const imageUrls = imageResults.map((result) => result.secure_url);
 
     const product = new Product({
       name,
@@ -85,6 +84,36 @@ exports.createProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating product:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//get all products
+exports.getProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate("category")
+      .populate("createdBy")
+      .populate("discount")
+      .populate("relatedProducts");
+    res.status(200).json({ status: "success", data: products });
+  } catch (error) {
+    console.error("Error getting products:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//get a product by id
+exports.getProductById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({ status: "success", data: product });
+  } catch (error) {
+    console.error("Error getting product:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
