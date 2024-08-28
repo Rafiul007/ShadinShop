@@ -1,6 +1,8 @@
 const Product = require("../models/product.model");
 const Category = require("../models/category.models");
 const Employee = require("../models/employee.model");
+const Discount = require("../models/discount.model");
+const { check, validationResult } = require("express-validator");
 const cloudinary = require("../utils/cloudinaryConfig");
 
 //function to calculate discount price based on discount type
@@ -18,7 +20,6 @@ exports.createProduct = async (req, res) => {
     description,
     price,
     quantity,
-    images,
     category,
     discount,
     relatedProducts,
@@ -34,10 +35,17 @@ exports.createProduct = async (req, res) => {
   //if discount is empty set it to 0
   if (!discount) {
     discount = null;
-    var discountType = "percentage";
   }
+  //get discount by discount id
+  const discountObj = await Discount.findById(discount);
+  const discountType = discountObj.discount_type;
+  const discountAmount = discountObj.value;
   //calculate discount price based on discount type
-  const discountPrice = calculateDiscountPrice(price, discount, discountType);
+  const discountPrice = calculateDiscountPrice(
+    price,
+    discountAmount,
+    discountType
+  );
   if (!relatedProducts) {
     relatedProducts = null;
   }
@@ -114,6 +122,129 @@ exports.getProductById = async (req, res) => {
     res.status(200).json({ status: "success", data: product });
   } catch (error) {
     console.error("Error getting product:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//delete a product
+exports.deleteProduct = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.status(200).json({ status: "success", message: "Product deleted" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+//update a product
+exports.updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const {
+    name,
+    description,
+    price,
+    quantity,
+    category,
+    discountId,
+    relatedProducts,
+  } = req.body;
+
+  const updatedBy = req.user.userId;
+
+  // Check if name, description, price, quantity, and category are not empty
+  if (!name || !description || !price || !quantity || !category) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update product fields
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.price = price || product.price;
+    product.quantity = quantity || product.quantity;
+    product.category = category || product.category;
+    product.relatedProducts = relatedProducts || product.relatedProducts;
+
+    // Handle discount updates
+    if (discountId) {
+      const discount = await Discount.findById(discountId);
+      if (!discount) {
+        return res.status(404).json({ message: "Discount not found" });
+      }
+      product.discount = discount._id;
+      product.discountPrice = calculateDiscountPrice(
+        product.price,
+        discount.value,
+        discount.discount_type
+      );
+    } else {
+      product.discount = null;
+      product.discountPrice = null;
+    }
+
+    product.updatedBy = updatedBy;
+
+    await product.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Product updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.updateProductImages = async (req, res) => {
+  const { id } = req.params;
+  const files = req.files;
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ message: "No images uploaded" });
+  }
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Delete old images from Cloudinary
+    for (let i = 0; i < product.images.length; i++) {
+      const imageId = product.images[i].split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(imageId);
+    }
+
+    // Upload new images to Cloudinary
+    const imageUploadPromises = files.map((file) =>
+      cloudinary.uploader.upload(file.path)
+    );
+    const imageResults = await Promise.all(imageUploadPromises);
+    const imageUrls = imageResults.map((result) => result.secure_url);
+
+    product.images = imageUrls;
+
+    await product.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Product images updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error updating product images:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

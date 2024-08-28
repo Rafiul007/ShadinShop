@@ -4,13 +4,9 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
-const multer = require("multer");
 const app = express();
 const PORT = process.env.PORT || 5000;
-const {
-  uploadMultiple,
-  uploadSingle,
-} = require("./utils/multerConfig");
+
 dotenv.config();
 
 app.use(cors());
