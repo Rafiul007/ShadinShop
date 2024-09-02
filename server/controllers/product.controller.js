@@ -97,20 +97,52 @@ exports.createProduct = async (req, res) => {
 };
 
 //get all products
+// exports.getProducts = async (req, res) => {
+//   try {
+//     const products = await Product.find()
+//       .populate("category")
+//       .populate("createdBy")
+//       .populate("discount")
+//       .populate("relatedProducts");
+//     res.status(200).json({ status: "success", data: products });
+//   } catch (error) {
+//     console.error("Error getting products:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// get all products with pagination
 exports.getProducts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page if not specified
+
+    const skip = (page - 1) * limit;
+
     const products = await Product.find()
       .populate("category")
       .populate("createdBy")
       .populate("discount")
-      .populate("relatedProducts");
-    res.status(200).json({ status: "success", data: products });
+      .populate("relatedProducts")
+      .skip(skip)
+      .limit(limit);
+
+    const totalProducts = await Product.countDocuments(); // Get total number of products
+
+    res.status(200).json({
+      status: "success",
+      data: products,
+      pagination: {
+        totalProducts,
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+      },
+    });
   } catch (error) {
     console.error("Error getting products:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 //get a product by id
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
