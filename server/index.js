@@ -35,12 +35,13 @@ const employeeRoutes = require("./routes/employee.route");
 const categoryRoutes = require("./routes/category.route");
 const productRoutes = require("./routes/product.route");
 const discountRoutes = require("./routes/discount.route");
+const customerRoutes = require("./routes/customer.route");
 //routes
 app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/discount", discountRoutes);
-
+app.use("/api/v1/customer", customerRoutes);
 
 // Global error handler 
 app.use((err, req, res, next) => {
