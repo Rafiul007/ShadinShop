@@ -175,7 +175,7 @@ exports.updateProduct = async (req, res) => {
     name,
     description,
     price,
-    sizes, // Accept sizes in update
+    sizes, 
     category,
     discountId,
     relatedProducts,
@@ -183,22 +183,26 @@ exports.updateProduct = async (req, res) => {
 
   const updatedBy = req.user.userId;
 
+  // Validate required fields
   if (!name || !description || !price || !sizes || !category) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
+    // Find the product to update
     const product = await Product.findById(id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Update product fields
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
     product.category = category || product.category;
     product.relatedProducts = relatedProducts || product.relatedProducts;
 
+    // Handle discount updates
     if (discountId) {
       const discount = await Discount.findById(discountId);
       if (!discount) {
@@ -217,21 +221,35 @@ exports.updateProduct = async (req, res) => {
 
     product.updatedBy = updatedBy;
 
+    // Save product with updated fields
     await product.save();
 
     // Update or add sizes
     if (sizes && sizes.length > 0) {
-      await Size.deleteMany({ product: product._id }); // Remove existing sizes
+      // Remove existing sizes associated with the product
+      await Size.deleteMany({ product: product._id });
+
+      // Add new sizes
       const sizePromises = sizes.map(async (size) => {
         const sizeObj = new Size({
           size: size.size,
           quantity: size.quantity,
           product: product._id,
         });
-        return await sizeObj.save();
+        return sizeObj.save();
       });
       await Promise.all(sizePromises);
+
+      // Update product's sizes reference
+      const sizeIds = (await Size.find({ product: product._id })).map(size => size._id);
+      product.size = sizeIds;
+    } else {
+      // If no sizes are provided, clear the size reference
+      product.size = [];
     }
+
+    // Save product with updated sizes
+    await product.save();
 
     res.status(200).json({
       status: "success",
@@ -243,6 +261,7 @@ exports.updateProduct = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // Update product images
 exports.updateProductImages = async (req, res) => {
@@ -291,15 +310,16 @@ exports.updateProductImages = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   const { id } = req.params;
   try {
+    // Find and delete the product by ID
     const product = await Product.findByIdAndDelete(id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Delete associated sizes
+    // Delete all sizes associated with this product
     await Size.deleteMany({ product: product._id });
 
-    res.status(200).json({ status: "success", message: "Product deleted" });
+    res.status(200).json({ status: "success", message: "Product and associated sizes deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
     res.status(500).json({ message: "Server error" });
