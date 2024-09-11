@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ProductSlider from "../components/ProductSlider";
 import DeliveryInfoTable from "../components/DeliveryInfoTable";
 import Footer from "../components/Footer";
@@ -9,11 +9,11 @@ import { fetchProduct } from "../features/products/productSlice";
 function ProductPage() {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const [selectedSize, setSelectedSize] = useState("");
 
   // Fetch product data from Redux store
   const { product, status, error } = useSelector((state) => state.products);
 
-  // Fetch product by ID when the component mounts or when the ID changes
   useEffect(() => {
     console.log("Effect triggered");
     if (id) {
@@ -32,7 +32,7 @@ function ProductPage() {
     return <div>Error: {error}</div>;
   }
 
-  if (!product) {
+  if (!fetchedProduct) {
     return <div>Product Not Found</div>;
   }
 
@@ -42,6 +42,18 @@ function ProductPage() {
   const discountPrice = fetchedProduct?.discountPrice;
   const discountType = fetchedProduct?.discount?.type;
   const discountValue = fetchedProduct?.discount?.value;
+
+  // Handle size options
+  const sizes = fetchedProduct?.size || []; 
+  console.log("sizes: ", sizes);
+
+  const handleSizeChange = (event) => {
+    setSelectedSize(event.target.value);
+  };
+
+  // Determine if the selected size is in stock
+  const selectedSizeData = sizes.find(size => size._id === selectedSize);
+  const isSizeAvailable = selectedSizeData ? selectedSizeData.quantity > 0 : false;
 
   return (
     <div className="w-full flex flex-col">
@@ -77,9 +89,35 @@ function ProductPage() {
           </div>
           {/* Product form to add to cart */}
           <form className="flex flex-col gap-5 py-3">
+            {/* Size select dropdown */}
+            {sizes.length > 0 && (
+              <div className="mb-4">
+                <label htmlFor="size" className="block text-md font-semibold">Select Size:</label>
+                <select
+                  id="size"
+                  name="size"
+                  value={selectedSize}
+                  onChange={handleSizeChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                >
+                  <option value="">Select a size</option>
+                  {sizes.map((size) => (
+                    <option key={size._id} value={size._id}>
+                      {size.size}
+                      {size.quantity === 0 && selectedSize !== "" && (
+                        <span className="text-red-500 text-sm ml-2">(Out of Stock)</span>
+                      )}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* Add to Cart button */}
-            <button className="w-60 h-10 rounded bg-primary text-white hover:bg-orange-700">
-              Add to Cart
+            <button 
+              className={`w-60 h-10 rounded ${selectedSize === "" ? 'bg-gray-300 cursor-not-allowed' : isSizeAvailable ? 'bg-primary hover:bg-orange-700' : 'bg-gray-300 cursor-not-allowed' } text-white`} 
+              disabled={selectedSize === "" || !isSizeAvailable}
+            >
+              {selectedSize === "" ? 'Select a size' : isSizeAvailable ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </form>
           {/* Product Description */}
