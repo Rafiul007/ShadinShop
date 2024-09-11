@@ -6,15 +6,19 @@ const productSchema = new Schema(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     discountPrice: { type: Number },
-    quantity: { type: Number, required: true },
+    size: [{
+      type: Schema.Types.ObjectId,
+      ref: "Size",
+      default: null,
+    }],
     images: [{ type: String, required: true }],
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
-    discount: { type: Schema.Types.ObjectId, ref: "Discount",  default: null },
-    relatedProducts: {
+    discount: { type: Schema.Types.ObjectId, ref: "Discount", default: null },
+    relatedProducts: [{
       type: Schema.Types.ObjectId,
       ref: "Product",
-      default: null
-      },
+      default: null,
+    }],
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "Employee",

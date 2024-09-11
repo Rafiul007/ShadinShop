@@ -2,10 +2,11 @@ const Product = require("../models/product.model");
 const Category = require("../models/category.models");
 const Employee = require("../models/employee.model");
 const Discount = require("../models/discount.model");
+const Size = require("../models/size.model"); // Import Size model
 const { check, validationResult } = require("express-validator");
 const cloudinary = require("../utils/cloudinaryConfig");
 
-//function to calculate discount price based on discount type
+// Function to calculate discount price based on discount type
 const calculateDiscountPrice = (price, discount, discountType) => {
   if (discountType === "percentage") {
     return price - (price * discount) / 100;
@@ -13,42 +14,43 @@ const calculateDiscountPrice = (price, discount, discountType) => {
     return price - discount;
   }
 };
-//create a product with multiple images
+
+// Create a product with multiple images
 exports.createProduct = async (req, res) => {
   var {
     name,
     description,
     price,
-    quantity,
+    sizes, 
     category,
     discount,
     relatedProducts,
   } = req.body;
   const files = req.files;
   const createdBy = req.user.userId;
-  const updatedBy = req.user.userId;
 
-  //check if name, description, price, quantity and category are not empty
-  if (!name || !description || !price || !quantity || !category) {
+  // Check if name, description, price, sizes, and category are not empty
+  if (!name || !description || !price || !sizes || !category) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  //if discount is empty set it to 0
+
+  // If discount is empty, set it to null
   if (!discount) {
     discount = null;
   }
-  //get discount by discount id
+
+  // Get discount details if applicable
   const discountObj = await Discount.findById(discount);
-  const discountType = discountObj.discount_type;
-  const discountAmount = discountObj.value;
-  //calculate discount price based on discount type
-  const discountPrice = calculateDiscountPrice(
-    price,
-    discountAmount,
-    discountType
-  );
+  const discountType = discountObj ? discountObj.discount_type : null;
+  const discountAmount = discountObj ? discountObj.value : null;
+  const discountPrice = discountType
+    ? calculateDiscountPrice(price, discountAmount, discountType)
+    : null;
+
   if (!relatedProducts) {
     relatedProducts = null;
   }
+
   try {
     // Check if at least one image is uploaded
     if (!files || files.length === 0) {
@@ -57,7 +59,7 @@ exports.createProduct = async (req, res) => {
         .json({ message: "At least one image is required" });
     }
 
-    //check if category exists
+    // Check if category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
       return res.status(404).json({ message: "Category not found" });
@@ -68,23 +70,37 @@ exports.createProduct = async (req, res) => {
       cloudinary.uploader.upload(file.path)
     );
     const imageResults = await Promise.all(imageUploadPromises);
-    // Extract secure URLs from Cloudinary response
     const imageUrls = imageResults.map((result) => result.secure_url);
 
+    // Create and save the product
     const product = new Product({
       name,
       description,
       price,
       discountPrice,
-      quantity,
       images: imageUrls,
       category,
       discount,
       relatedProducts,
       createdBy,
-      updatedBy,
     });
+
+    // Save sizes and link to the product
+    if (sizes && sizes.length > 0) {
+      const sizeIds = await Promise.all(sizes.map(async (size) => {
+        const sizeObj = new Size({
+          size: size.size,
+          quantity: size.quantity,
+          product: product._id,
+        });
+        const savedSize = await sizeObj.save();
+        return savedSize._id;  // Collect size ID after saving
+      }));
+      product.size = sizeIds;  // Assign the array of size IDs to the product
+    }
+
     await product.save();
+
     res.status(201).json({
       status: "success",
       message: "Product created successfully",
@@ -96,27 +112,12 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-//get all products
-// exports.getProducts = async (req, res) => {
-//   try {
-//     const products = await Product.find()
-//       .populate("category")
-//       .populate("createdBy")
-//       .populate("discount")
-//       .populate("relatedProducts");
-//     res.status(200).json({ status: "success", data: products });
-//   } catch (error) {
-//     console.error("Error getting products:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
 
-// get all products with pagination
+// Get all products with pagination
 exports.getProducts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page if not specified
-
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const products = await Product.find()
@@ -124,10 +125,11 @@ exports.getProducts = async (req, res) => {
       .populate("createdBy")
       .populate("discount")
       .populate("relatedProducts")
+      .populate("size") 
       .skip(skip)
       .limit(limit);
 
-    const totalProducts = await Product.countDocuments(); // Get total number of products
+    const totalProducts = await Product.countDocuments();
 
     res.status(200).json({
       status: "success",
@@ -143,19 +145,22 @@ exports.getProducts = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-//get a product by id
+
+// Get a product by id
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
   try {
-    console.log("Product has been called testing", id);
     const product = await Product.findById(id)
       .populate("category")
       .populate("createdBy")
       .populate("discount")
-      .populate("relatedProducts");
+      .populate("relatedProducts")
+      .populate("size"); // Populate size field
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
     res.status(200).json({ status: "success", data: product });
   } catch (error) {
     console.error("Error getting product:", error);
@@ -163,29 +168,14 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-//delete a product
-exports.deleteProduct = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const product = await Product.findByIdAndDelete(id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    res.status(200).json({ status: "success", message: "Product deleted" });
-  } catch (error) {
-    console.error("Error deleting product:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-//update a product
+// Update a product
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const {
     name,
     description,
     price,
-    quantity,
+    sizes, // Accept sizes in update
     category,
     discountId,
     relatedProducts,
@@ -193,8 +183,7 @@ exports.updateProduct = async (req, res) => {
 
   const updatedBy = req.user.userId;
 
-  // Check if name, description, price, quantity, and category are not empty
-  if (!name || !description || !price || !quantity || !category) {
+  if (!name || !description || !price || !sizes || !category) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -204,15 +193,12 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Update product fields
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
-    product.quantity = quantity || product.quantity;
     product.category = category || product.category;
     product.relatedProducts = relatedProducts || product.relatedProducts;
 
-    // Handle discount updates
     if (discountId) {
       const discount = await Discount.findById(discountId);
       if (!discount) {
@@ -233,6 +219,20 @@ exports.updateProduct = async (req, res) => {
 
     await product.save();
 
+    // Update or add sizes
+    if (sizes && sizes.length > 0) {
+      await Size.deleteMany({ product: product._id }); // Remove existing sizes
+      const sizePromises = sizes.map(async (size) => {
+        const sizeObj = new Size({
+          size: size.size,
+          quantity: size.quantity,
+          product: product._id,
+        });
+        return await sizeObj.save();
+      });
+      await Promise.all(sizePromises);
+    }
+
     res.status(200).json({
       status: "success",
       message: "Product updated successfully",
@@ -244,6 +244,7 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// Update product images
 exports.updateProductImages = async (req, res) => {
   const { id } = req.params;
   const files = req.files;
@@ -282,6 +283,25 @@ exports.updateProductImages = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating product images:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete a product
+exports.deleteProduct = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Delete associated sizes
+    await Size.deleteMany({ product: product._id });
+
+    res.status(200).json({ status: "success", message: "Product deleted" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
