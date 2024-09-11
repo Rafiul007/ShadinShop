@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-//fetch product with pagination for homepage
+// Fetch products with pagination for homepage
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async ({ page = 1, limit = 9 }, { rejectWithValue }) => {
@@ -9,11 +9,24 @@ export const fetchProducts = createAsyncThunk(
       const response = await axios.get(
         `http://localhost:5000/api/v1/product?page=${page}&limit=${limit}`
       );
-      console.log(response.data);
       return response.data;
     } catch (error) {
-      console.log(error);
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response.data || error.message); 
+    }
+  }
+);
+
+// Fetch a single product
+export const fetchProduct = createAsyncThunk(
+  "products/fetchProduct",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/v1/product/${id}`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data || error.message); 
     }
   }
 );
@@ -23,6 +36,7 @@ const productsSlice = createSlice({
   initialState: {
     status: "idle",
     products: [],
+    product: null,
     error: null,
     pagination: {
       currentPage: 1,
@@ -42,10 +56,21 @@ const productsSlice = createSlice({
         state.pagination.totalPages = action.payload.pagination.totalPages;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
-        console.log(action.payload);
         state.status = "failed";
-        state.error = action.payload;
+        state.error = action.payload || 'Failed to fetch products';
+      })
+      .addCase(fetchProduct.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchProduct.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.product = action.payload;
+      })
+      .addCase(fetchProduct.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || 'Failed to fetch product';
       });
   },
 });
+
 export default productsSlice.reducer;

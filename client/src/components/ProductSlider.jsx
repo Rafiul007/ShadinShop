@@ -1,15 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import Glide from "@glidejs/glide";
-import samba1 from '../assets/samba/samba1.jpg'
-import samba2 from '../assets/samba/samba2.jpg'
-import samba3 from '../assets/samba/samba3.jpg'
 
-export default function SliderControlsInside() {
+export default function SliderControlsInside({ images }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const glideRef = useRef(null);
-
-  const images = [samba1, samba2, samba3];
 
   useEffect(() => {
     if (imagesLoaded) {
@@ -17,13 +12,13 @@ export default function SliderControlsInside() {
         type: "slider",
         focusAt: "center",
         perView: 1,
-        autoplay: 3000,
+        autoplay: 5000,
         animationDuration: 700,
         gap: 0,
       }).mount();
 
       // Bind event to update the selectedIndex state when the slide changes
-      glideRef.current.on('move.after', () => {
+      glideRef.current.on("move.after", () => {
         setSelectedIndex(glideRef.current.index);
       });
 
@@ -31,7 +26,7 @@ export default function SliderControlsInside() {
         glideRef.current.destroy();
       };
     }
-  }, [imagesLoaded]);
+  }, [imagesLoaded, images]);
 
   const handleThumbnailClick = (index) => {
     setSelectedIndex(index);
@@ -40,7 +35,7 @@ export default function SliderControlsInside() {
 
   const handleImageLoad = () => {
     const allImages = document.querySelectorAll(".glide-01 img");
-    const loadedImages = Array.from(allImages).filter(img => img.complete);
+    const loadedImages = Array.from(allImages).filter((img) => img.complete);
     if (loadedImages.length === images.length) {
       setImagesLoaded(true);
     }
@@ -71,7 +66,7 @@ export default function SliderControlsInside() {
           data-glide-el="controls"
         >
           <button
-            className="inline-flex items-center justify-center w-8 h-8 transition duration-300 border rounded-full border-slate-700 bg-white/20 text-slate-700 hover:border-slate-900 hover:text-slate-900 focus-visible:outline-none lg:h-12 lg:w-12"
+            className="inline-flex items-center justify-center w-8 h-8 transition duration-300 border rounded-full border-slate-700 bg-white/20 text-slate-700 hover:border-slate-900 hover:text-slate-900 focus-visible:outline-none lg:h-12 lg:w-12 hover:shadow-lg hover:scale-110 transform-gpu"
             data-glide-dir="<"
             aria-label="prev slide"
           >
@@ -92,7 +87,7 @@ export default function SliderControlsInside() {
             </svg>
           </button>
           <button
-            className="inline-flex items-center justify-center w-8 h-8 transition duration-300 border rounded-full border-slate-700 bg-white/20 text-slate-700 hover:border-slate-900 hover:text-slate-900 focus-visible:outline-none lg:h-12 lg:w-12"
+            className="inline-flex items-center justify-center w-8 h-8 transition duration-300 border rounded-full border-slate-700 bg-white/20 text-slate-700 hover:border-slate-900 hover:text-slate-900 focus-visible:outline-none lg:h-12 lg:w-12 hover:shadow-lg hover:scale-110 transform-gpu"
             data-glide-dir=">"
             aria-label="next slide"
           >

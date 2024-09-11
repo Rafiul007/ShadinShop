@@ -147,7 +147,12 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
   try {
-    const product = await Product.findById(id);
+    console.log("Product has been called testing", id);
+    const product = await Product.findById(id)
+      .populate("category")
+      .populate("createdBy")
+      .populate("discount")
+      .populate("relatedProducts");
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }

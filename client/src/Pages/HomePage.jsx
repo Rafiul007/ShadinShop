@@ -25,8 +25,6 @@ function HomePage() {
   if (status === "failed") {
     return <p>Error: {error}</p>;
   }
-
-  console.log(products);
   return (
     <div>
       <section className="max-width-2 flex justify-between gap-10 border-2 ">
@@ -69,32 +67,20 @@ function HomePage() {
           </a>
         </div>
         <div className="w-full grid grid-cols-4 gap-5 max-width">
-          <ProductCard
-            image={banner}
-            title={"Testing"}
-            description={"Testing one two three four"}
-            price={2500}
-          />
-          <ProductCard
-            image={banner}
-            title={"Testing"}
-            description={"Testing one two three four"}
-            price={2500}
-          />
-          <ProductCard
-            image={banner}
-            title={"Testing"}
-            description={
-              "Testing one two three four Testing one two three four Testing one two three four"
-            }
-            price={2500}
-          />
-          <ProductCard
-            image={banner}
-            title={"Testing"}
-            description={"Testing one two three four"}
-            price={2500}
-          />
+          {/* Show products that have a discount */}
+          {products
+            .filter((product) => product.discountPrice !== product.price)
+            .map((product) => (
+              <div key={product._id}>
+                <ProductCard
+                  image={product.images[0]}
+                  title={product.name}
+                  description={product.description}
+                  price={product.price}
+                  discountPrice={product.discountPrice}
+                />
+              </div>
+            ))}
         </div>
       </section>
       {/* Newsletter */}
@@ -106,13 +92,15 @@ function HomePage() {
         <div className="grid grid-cols-4 grid-rows-2 gap-3">
           {/* show products. 1st product wil take col-span-2 */}
           {products.map((product) => (
-            <div key={product._id} >
+            <div key={product._id}>
               <ProductCard
-                image={product.images[1]}
+                image={product.images[0]}
                 title={product.name}
                 description={product.description}
                 price={product.price}
                 discountPrice={product.discountPrice}
+                id={product._id}
+
               />
             </div>
           ))}

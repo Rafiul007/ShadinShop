@@ -1,18 +1,27 @@
+import { useNavigate } from "react-router-dom";
 export default function ProductCard({
   image,
   title,
   description,
   price,
   discountPrice,
+  id,
 }) {
+  const navigate = useNavigate();
+  const handleClick = (id) => {
+    navigate(`/product/${id}`);
+  };
   return (
-    <div className="flex flex-col overflow-hidden rounded bg-white text-slate-500 shadow-md shadow-slate-200 w-full h-100 duration-200 ease-in-out hover:scale-105">
+    <div
+      className="flex flex-col overflow-hidden rounded bg-white text-slate-500 shadow-md shadow-slate-200 w-full h-auto duration-200 ease-in-out hover:scale-105"
+      onClick={() => handleClick(id)}
+    >
       {/* Image */}
-      <figure className="flex-shrink-0 w-full h-42 overflow-hidden">
+      <figure className="flex-shrink-0 w-full h-64 overflow-hidden">
         <img
           src={image}
           alt="card image"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
       </figure>
       {/* Body */}
@@ -22,7 +31,7 @@ export default function ProductCard({
             {title}
           </h3>
           <div className="flex flex-row gap-3">
-            {discountPrice != price ? (
+            {discountPrice !== price ? (
               <div className="flex flex-row gap-2">
                 <p className="text-primary font-semibold">TK {discountPrice}</p>
                 <p className="text-slate-400 line-through">TK {price}</p>
