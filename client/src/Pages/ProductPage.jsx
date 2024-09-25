@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProduct } from "../features/products/productSlice";
+import { addProduct } from "../features/cart/cartSlice";
 import ProductCard from "../components/ProductCard";
 
 function ProductPage() {
@@ -16,14 +17,12 @@ function ProductPage() {
   const { product, status, error } = useSelector((state) => state.products);
 
   useEffect(() => {
-    console.log("Effect triggered");
     if (id) {
       dispatch(fetchProduct(id));
     }
   }, [id, dispatch]);
 
   const fetchedProduct = product?.data;
-  console.log("fetchedProduct: ", fetchedProduct);
 
   if (status === "loading") {
     return <div>Loading product details...</div>;
@@ -37,19 +36,9 @@ function ProductPage() {
     return <div>Product Not Found</div>;
   }
 
-  // Determine if there's a discount and calculate the necessary values
-  const isDiscounted = fetchedProduct?.discount !== null;
-  const originalPrice = fetchedProduct?.price;
-  const discountPrice = fetchedProduct?.discountPrice;
-  const discountType = fetchedProduct?.discount?.type;
-  const discountValue = fetchedProduct?.discount?.value;
-  const relatedProducts = fetchedProduct?.relatedProducts || [];
-  const hotDealProducts = fetchedProduct?.relatedProducts || [];
-
   // Handle size options
-  const sizes = fetchedProduct?.size || [];
-  console.log("sizes: ", sizes);
-
+  console.log("fetchedProduct size:", fetchedProduct?.size);
+  const sizes = Array.isArray(fetchedProduct?.size) ? fetchedProduct.size : [];
   const handleSizeChange = (event) => {
     setSelectedSize(event.target.value);
   };
@@ -59,6 +48,23 @@ function ProductPage() {
   const isSizeAvailable = selectedSizeData
     ? selectedSizeData.quantity > 0
     : false;
+
+  const handleAddToCart = () => {
+    const productToAdd = {
+      id: fetchedProduct._id,
+      name: fetchedProduct.name,
+      price: fetchedProduct.price,
+      quantity: 1, 
+      size: selectedSizeData.size,
+    };
+    console.log("productToAdd:", productToAdd);
+    //debound delay of 1sec
+    setTimeout(() => {
+      dispatch(addProduct(productToAdd));
+    }, 500);
+
+    setSelectedSize("");
+  };
 
   return (
     <div className="w-full flex flex-col">
@@ -75,22 +81,11 @@ function ProductPage() {
             <p className="text-xl">
               Price:{" "}
               <span className="text-primary">
-                {isDiscounted ? `${discountPrice}TK` : `${originalPrice}TK`}
+                {fetchedProduct.discountPrice
+                  ? `${fetchedProduct.discountPrice}TK`
+                  : `${fetchedProduct.price}TK`}
               </span>
             </p>
-            {/* Show discount and original price if applicable */}
-            {isDiscounted && (
-              <>
-                <p className="text-md text-slate-400 line-through">
-                  {originalPrice}TK
-                </p>
-                {discountType === "percentage" && (
-                  <span className="inline-flex items-center justify-center gap-1 rounded-full bg-primary px-3 text-sm text-white">
-                    {`${discountValue}% off`}
-                  </span>
-                )}
-              </>
-            )}
           </div>
           {/* Product form to add to cart */}
           <form className="flex flex-col gap-5 py-3">
@@ -123,6 +118,13 @@ function ProductPage() {
             )}
             {/* Add to Cart button */}
             <button
+              type="submit"
+              onClick={(e) => {
+                e.preventDefault();
+                if (selectedSize !== "" && isSizeAvailable) {
+                  handleAddToCart();
+                }
+              }}
               className={`w-60 h-10 rounded ${
                 selectedSize === ""
                   ? "bg-gray-300 cursor-not-allowed"
@@ -151,31 +153,23 @@ function ProductPage() {
       {/* Related Products */}
       <div className="max-width-3 flex flex-col justify-center items-center border-2 border-blue-700">
         <h1 className="text-3xl font-bold">Related Products</h1>
-        {/*  */}
         <div className="w-full grid grid-cols-4 gap-5 max-width">
-          {relatedProducts.length > 0
-            ? relatedProducts.map((product) => (
-                <div key={product._id}>
-                  <ProductCard
-                    image={product.images[0]}
-                    title={product.name}
-                    description={product.description}
-                    price={product.price}
-                    discountPrice={product.discountPrice}
-                  />
-                </div>
-              ))
-            : hotDealProducts.map((product) => (
-                <div key={product._id}>
-                  <ProductCard
-                    image={product.images[0]}
-                    title={product.name}
-                    description={product.description}
-                    price={product.price}
-                    discountPrice={product.discountPrice}
-                  />
-                </div>
-              ))}
+          {Array.isArray(fetchedProduct.relatedProducts) &&
+          fetchedProduct.relatedProducts.length > 0 ? (
+            fetchedProduct.relatedProducts.map((product) => (
+              <div key={product._id}>
+                <ProductCard
+                  image={product.images[0]}
+                  title={product.name}
+                  description={product.description}
+                  price={product.price}
+                  discountPrice={product.discountPrice}
+                />
+              </div>
+            ))
+          ) : (
+            <p>No related products available.</p>
+          )}
         </div>
       </div>
       <Footer />

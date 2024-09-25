@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux'; // Import to access the Redux store
 import { useLocation, Link } from 'react-router-dom';
 import logo from '../assets/logo.png';
 import { CiSearch, CiShoppingCart, CiUser } from 'react-icons/ci';
@@ -7,17 +8,12 @@ import Banner from './Banner';
 import Cart from '../components/Cart';
 
 function Navbar() {
-  const [cartCount, setCartCount] = useState(2);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const location = useLocation();
 
-  // Sample cart items
-  const [cartItems, setCartItems] = useState([
-    { name: 'Adidas Samba (White)', price: 29.99 },
-    { name: 'Air Jordern High OG Red', price: 19.99 },
-    { name: 'New Balance 550', price: 39.99 },
-    { name: 'Levis 501', price: 24.99 },
-  ]);
+  // Access cart items and total from the Redux store
+  const cartItems = useSelector((state) => state.cart.products);
+  const totalPrice = useSelector((state) => state.cart.total);
 
   return (
     <header>
@@ -64,14 +60,15 @@ function Navbar() {
                   className="hover:text-primary ease-in-out hover:scale-110 duration-500 cursor-pointer"
                   onClick={() => setIsCartOpen(!isCartOpen)}
                 />
-                {cartCount > 0 && (
+                {cartItems.length > 0 && (
                   <div className="absolute -top-2 -right-2 bg-primary rounded-full text-white w-5 h-5 flex items-center justify-center text-sm">
-                    {cartCount}
+                    {cartItems.length}
                   </div>
                 )}
                 {isCartOpen && (
                   <div className="absolute left-0 mt-2 bg-white border border-gray-300 rounded-md shadow-md w-80 z-50">
-                    <Cart cartItems={cartItems} />
+                    {/* Pass cartItems and totalPrice to Cart component */}
+                    <Cart cartItems={cartItems} totalPrice={totalPrice} />
                   </div>
                 )}
               </div>
