@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProduct } from "../features/products/productSlice";
+import ProductCard from "../components/ProductCard";
 
 function ProductPage() {
   const { id } = useParams();
@@ -42,9 +43,11 @@ function ProductPage() {
   const discountPrice = fetchedProduct?.discountPrice;
   const discountType = fetchedProduct?.discount?.type;
   const discountValue = fetchedProduct?.discount?.value;
+  const relatedProducts = fetchedProduct?.relatedProducts || [];
+  const hotDealProducts = fetchedProduct?.relatedProducts || [];
 
   // Handle size options
-  const sizes = fetchedProduct?.size || []; 
+  const sizes = fetchedProduct?.size || [];
   console.log("sizes: ", sizes);
 
   const handleSizeChange = (event) => {
@@ -52,8 +55,10 @@ function ProductPage() {
   };
 
   // Determine if the selected size is in stock
-  const selectedSizeData = sizes.find(size => size._id === selectedSize);
-  const isSizeAvailable = selectedSizeData ? selectedSizeData.quantity > 0 : false;
+  const selectedSizeData = sizes.find((size) => size._id === selectedSize);
+  const isSizeAvailable = selectedSizeData
+    ? selectedSizeData.quantity > 0
+    : false;
 
   return (
     <div className="w-full flex flex-col">
@@ -92,7 +97,9 @@ function ProductPage() {
             {/* Size select dropdown */}
             {sizes.length > 0 && (
               <div className="mb-4">
-                <label htmlFor="size" className="block text-md font-semibold">Select Size:</label>
+                <label htmlFor="size" className="block text-md font-semibold">
+                  Select Size:
+                </label>
                 <select
                   id="size"
                   name="size"
@@ -105,7 +112,9 @@ function ProductPage() {
                     <option key={size._id} value={size._id}>
                       {size.size}
                       {size.quantity === 0 && selectedSize !== "" && (
-                        <span className="text-red-500 text-sm ml-2">(Out of Stock)</span>
+                        <span className="text-red-500 text-sm ml-2">
+                          (Out of Stock)
+                        </span>
                       )}
                     </option>
                   ))}
@@ -113,11 +122,21 @@ function ProductPage() {
               </div>
             )}
             {/* Add to Cart button */}
-            <button 
-              className={`w-60 h-10 rounded ${selectedSize === "" ? 'bg-gray-300 cursor-not-allowed' : isSizeAvailable ? 'bg-primary hover:bg-orange-700' : 'bg-gray-300 cursor-not-allowed' } text-white`} 
+            <button
+              className={`w-60 h-10 rounded ${
+                selectedSize === ""
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : isSizeAvailable
+                  ? "bg-primary hover:bg-orange-700"
+                  : "bg-gray-300 cursor-not-allowed"
+              } text-white`}
               disabled={selectedSize === "" || !isSizeAvailable}
             >
-              {selectedSize === "" ? 'Select a size' : isSizeAvailable ? 'Add to Cart' : 'Out of Stock'}
+              {selectedSize === ""
+                ? "Select a size"
+                : isSizeAvailable
+                ? "Add to Cart"
+                : "Out of Stock"}
             </button>
           </form>
           {/* Product Description */}
@@ -127,6 +146,36 @@ function ProductPage() {
           </div>
           {/* Delivery Info table */}
           <DeliveryInfoTable />
+        </div>
+      </div>
+      {/* Related Products */}
+      <div className="max-width-3 flex flex-col justify-center items-center border-2 border-blue-700">
+        <h1 className="text-3xl font-bold">Related Products</h1>
+        {/*  */}
+        <div className="w-full grid grid-cols-4 gap-5 max-width">
+          {relatedProducts.length > 0
+            ? relatedProducts.map((product) => (
+                <div key={product._id}>
+                  <ProductCard
+                    image={product.images[0]}
+                    title={product.name}
+                    description={product.description}
+                    price={product.price}
+                    discountPrice={product.discountPrice}
+                  />
+                </div>
+              ))
+            : hotDealProducts.map((product) => (
+                <div key={product._id}>
+                  <ProductCard
+                    image={product.images[0]}
+                    title={product.name}
+                    description={product.description}
+                    price={product.price}
+                    discountPrice={product.discountPrice}
+                  />
+                </div>
+              ))}
         </div>
       </div>
       <Footer />

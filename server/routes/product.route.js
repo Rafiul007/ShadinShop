@@ -19,13 +19,27 @@ router.post(
   "/create",
   authenticate,
   isSuperadmin,
+  (req, res, next) => {
+    console.log("hello -----------0");
+    next();
+  },
   uploadMultiple,
+  (req, res, next) => {
+    console.log("hello -----------1");
+    next();
+  },
   [
     check("name", "Name is required").not().isEmpty(),
     check("description", "Description is required").not().isEmpty(),
-    check("price", "Price is required").not().isEmpty(),
-    check("stock", "Stock is required").not().isEmpty(),
+    check("price", "Price is required").isNumeric().withMessage("Price must be a number"),
+    check("sizes", "Sizes are required").isArray({ min: 1 }).withMessage("Sizes must be an array with at least one size"),
+    check("sizes.*.size", "Each size must have a size value").not().isEmpty(),
+    check("sizes.*.quantity", "Each size must have a quantity").isNumeric().withMessage("Quantity must be a number"),
   ],
+  (req, res, next) => {
+    console.log("hello ------------2");
+    next();
+  },
   createProduct
 );
 //get all products
